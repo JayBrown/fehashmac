@@ -1,0 +1,55 @@
+#! /bin/bash
+#
+#	md5sum2md5 [-a algo] [file ...]
+#	transforms the usual MD5SUM file format into a decent md5 type format
+#	-a algo	: use the specified algo instead of md5 (e.g. sha1, sha256)
+#	input format:
+#	md5hash   filename
+#	output format:
+#	md5 (filename) = md5hash
+#
+#	hvf 04.05.2010	22.08.2013 01.08.2016
+
+ALGO=md5
+
+function Usage()
+{
+	echo "Usage: $0 [-a algorithm] [--help] [file ...]" >&2
+	echo "algorithm is any of md5 (default), sha256, sha512, ..." >&2
+	echo "see ''fehashmac --list'' for a list of supported hash algorithms" >&2
+	echo "Example: sha256sum /etc/passwd | $0 -a sha256 | fehashmac -c" >&2
+}
+
+function dotransform ()	# one parameter: filename or empty
+{
+	if [ -z "$*" ]; then cat
+	else cat "$*" ; fi | sed 's/\*/ /g' | while read hash filename; do
+		# delete possible '*' - I saw this on Ubuntu ;-(
+		echo "$ALGO ($filename) = $hash"
+	done
+}
+
+if [ $# -eq 0 ]; then
+	dotransform
+	exit 0
+fi
+
+FILESFOUND=0
+while [ $# -gt 0 ]; do
+	PARM=$1; shift
+	if [ "$PARM" = "-a" ]; then
+		ALGO=$1; shift
+	elif [ "$PARM" = "--help" ]; then
+		Usage
+		exit 0
+	else	
+		dotransform $PARM
+		((FILESFOUND++))
+	fi
+done
+
+# no filename found after algorithm: read from stdin
+if ((FILESFOUND == 0)); then
+	dotransform
+fi
+exit 0

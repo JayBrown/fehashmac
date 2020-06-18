@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en-gb" xmlns="http://www.w3.org/1999/xhtml" lang="en-gb"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+
+<!--nomodify-->
+<meta name="style" content="cs">
+<title>LASH : A Lattice Based Hash Function</title>
+</head><body>
+
+ <h2>LASH : A Lattice Based Hash Function</h2>
+ 
+ In the last few years a number of weaknesses have been found in standardised
+ hash functions such as MD4, MD5, RIPEMD and SHA-1.  All of these hash functions
+ are essentially derived from the same design and are constructed using somewhat
+ ad-hoc techniques.  In contrast, other areas of cryptography have replaced
+ ad-hoc construction with well defined sets of design principles.  Examples
+ include the wide-trail design strategy of AES, or the rigorous application of
+ reductionist provable security techniques as in the context of RSA-OEAP.  
+ While the SHA-2 family of hash functions is not yet known to succumb to the
+ recent attack techniques, its design principles are so similar to SHA-1 that
+ we have no guarantee an attack will not appear in the near future.
+ <p>
+ LASH is a new hash function design whose security properties are loosely based
+ on the problem of finding small vectors in lattices; originally this approach
+ was presented by Goldreich, Goldwasser and Halevi in 1996.  LASH takes the
+ idea behind the construction of Goldreich et al. and obtains an efficient hash
+ function whose design is partly motivated by aspects of implementation such as
+ speed and memory footprint, and the ability to fully utilise processor features
+ available in current computer architectures. 
+
+ </p><h2>Download and Installation</h2>
+
+ In order to make experimentation with and attacks on LASH easier, we have
+ developed a reference implementation which also includes a performance oriented
+ SIMD version.  This reference source code includes driver programs to create
+ and process test vectors, and to benchmark LASH.
+ <p>
+ Before you start, note that LASH is distributed under the terms and conditions
+ of the <a href="http://www.gnu.org/copyleft/gpl.html">GPL</a>.  Since the LASH
+ source code is written in C, you need a (preferably modern) compiler such as
+ <a href="http://gcc.gnu.org/">GCC</a>.  The easiest way to get hold of LASH is
+ to download the current distribution set:
+
+ </p><ul><li><a href="http://www.cs.bris.ac.uk/%7Epage/research/lash/lash-0.1.0.tar.gz"><code>lash-0.1.0.tar.gz</code></a>
+</li></ul>
+
+ Configuration of LASH is via the <code>lash.h</code> header file; there are
+ three main sets of options, in each set only one option should be turned on
+ by uncommenting it:
+<pre>// !!! define exactly one hash type
+  #define LASH_CONFIG_SIZE_160                  /* 160-bit output version    */
+//#define LASH_CONFIG_SIZE_256                  /* 256-bit output version    */
+//#define LASH_CONFIG_SIZE_384                  /* 384-bit output version    */
+//#define LASH_CONFIG_SIZE_512                  /* 512-bit output version    */
+
+// !!! define exactly one compression type
+//#define LASH_CONFIG_COMP_BYTE                 /* byte based compression    */
+  #define LASH_CONFIG_COMP_WORD                 /* word based compression    */
+//#define LASH_CONFIG_COMP_SIMD                 /* simd based compression    */
+
+// !!! define exactly one computation type
+//#define LASH_CONFIG_MATRIX_ALL                /* everything precomputed    */
+  #define LASH_CONFIG_MATRIX_ROW                /* one row    precomputed    */
+//#define LASH_CONFIG_MATRIX_COL                /* one col    precomputed    */
+</pre>
+ The first set dictate the LASH parameterisation, for example aspects such as
+ the output and block size.  The second set dictate which implementation method
+ is used for the compression function; the essentially boils down to how much
+ parallelism we can use to perform the arithmetic operations.  The third set
+ dictates how much of the matrix is pre-computed.  At the moment there isn't
+ an option to pre-compute nothing although this is easy and could be desirable
+ for an embedded implementation.  By default LASH is configured to give 160-bit
+ output, to use word-based (i.e. 32-bit based) compression function, and to
+ pre-compute a whole row of the matrix.
+
+<!--
+ <h2>Bibliography</h2>
+ <ul><li>...
+</ul>
+-->
+
+<!--
+ <h2>Related Work</h2>
+ <ul><li>...
+</ul>
+-->
+
+ <h2>Funding</h2>
+ <ul><li>EU FP6 NoE <a href="http://www.ecrypt.eu.org/">ECRYPT</a>.
+     </li><li>EPSRC grant EP/C522869/1 <a href="http://gow.epsrc.ac.uk/ViewGrant.aspx?GrantRef=EP/C522869/1">Performance and Security Aspects of Implementing Elliptic Curve Cryptography</a>.
+</li></ul>
+
+ <h2>People</h2>
+ <ul><li><a href="http://www.cs.bris.ac.uk//home/bentahar/">Kamel Bentahar</a>.
+     </li><li><a href="http://www.cs.bris.ac.uk/home/page/">Dan Page</a>.
+     </li><li><a href="http://www.m-js.com/">Markku-Juhani O. Saarinen</a>.
+     </li><li><a href="http://www.cs.bris.ac.uk/home/nigel/">Nigel Smart</a>.
+</li></ul>
+
+ <h2>Publications</h2>
+ <ul><li>D. Page. <br>
+         <a href="http://www.cs.bris.ac.uk/Publications/pub_info.jsp?id=2000688">Embedded Implementation of LASH</a>. <br>
+         Technical Report CSTR-07-003, University of Bristol, 2007.
+     </li><li>K. Bentahar, D. Page, M-J.O. Saarinen, J.H. Silverman and N.P. Smart.<br>
+         <a href="http://www.csrc.nist.gov/pki/HashWorkshop/program.htm">LASH</a>.<br>
+         2nd NIST Cryptographic Hash Workshop, 2006.
+</li></ul>
+
+ <h2>Presentations</h2>
+ <ul><li>M-J.O. Saarinen.<br>
+         <a href="http://www.csrc.nist.gov/pki/HashWorkshop/program.htm">LASH</a>.<br>
+         2nd NIST Cryptographic Hash Workshop, 2006.
+     </li><li>D. Page.<br>
+         <a href="http://www.isg.rhul.ac.uk/research/isg_seminar/index.shtml">LASH: A Lattice Based Hash Function</a>.<br>
+         Royal Holloway University of London, Information Security Group, 2005.
+     </li><li>N.P. Smart.<br>
+         <a href="http://www.cs.bris.ac.uk/Research/Seminars/departmental/index.jsp">LASH: A Lattice Based Hash Function</a>.<br>
+         University of Bristol, Department of Computer Science, 2005.   
+</li></ul>
+
+<!--
+ <h2>Press and Commentary</h2>
+ <ul><li>...
+</ul>
+-->
+</body></html>

@@ -1,0 +1,14 @@
+01.09.2011 hvf
+Version 1.1.7
+corrected an error in SKEIN_Final
+
+16.02.2009 hvf
+Version 1.0.3
+align data types, API with SHA-3
+whirl supports bitwise hashes (like sha1 etc.)
+
+26.01.2009 hvf
+version 1.0.2 ready for release
+
+19.01.2009 hvf
+renamed to fehashmac

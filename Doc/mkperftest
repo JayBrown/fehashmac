@@ -1,0 +1,56 @@
+#
+# mkperftest [-n nn]
+# execute a fehashmac performance test and display the results
+# parameter:
+# -n nn run nn tests and calculate average (default: 1)
+#
+# hvf 09.07.2016 version 1.0
+#
+SRCDIR=../src
+FEHASHMAC=$SRCDIR/fehashmac
+TEMPDIR=.
+TEMPFILE_HEADER=$(mktemp -p $TEMPDIR perfdataheader-XXXXXX)
+VERSION="V1.0 09.07.2016 hvf"
+n=1
+i=1
+if [ $# -gt 1 ] && [ "$1" = "-n" ]; then n="$2"; fi
+
+echo "$0 $VERSION running $n tests:"
+
+echo "Performance Data" > $TEMPFILE_HEADER
+echo "================" >> $TEMPFILE_HEADER
+uname -a >> $TEMPFILE_HEADER
+date >> $TEMPFILE_HEADER
+$FEHASHMAC -h | grep '^Generic' >> $TEMPFILE_HEADER
+echo >> $TEMPFILE_HEADER
+echo "$n runs, results are averaged" >> $TEMPFILE_HEADER
+echo "sorted from slowest to fastest." >> $TEMPFILE_HEADER
+echo >> $TEMPFILE_HEADER
+$FEHASHMAC --time 2>&1 | sed '2q' >> $TEMPFILE_HEADER
+echo >> $TEMPFILE_HEADER
+
+# extract NLOOPS and NBYTES from TEMPFILE_HEADER
+TEMPFILE_LOOPS=$(mktemp -p $TEMPDIR perfdataloops-XXXXXX)
+grep '^Hash time'  $TEMPFILE_HEADER | perl -n -e '/\D*(\d*)\D(\d*)/ && do { print "export NLOOPS=$1\nexport NBYTES=$2\n";};' > $TEMPFILE_LOOPS
+. $TEMPFILE_LOOPS
+
+TEMPFILE_DATA=$(mktemp -p $TEMPDIR perfdata-XXXXXX)
+
+while [ $i -le $n ]; do
+    $FEHASHMAC --time 2>&1 | sed '1,2d' >> $TEMPFILE_DATA
+    i=$(expr $i + 1)
+done
+
+TEMPFILE_OUT=$(mktemp -p $TEMPDIR perfdataout-XXXXXX)
+cat $TEMPFILE_DATA |sed '/#/d' | while read a b c d; do 
+        printf "%-10s %6.3f  %10d\n" $a $b $c; done | ./mkaverage.pl | sort -k3n > $TEMPFILE_OUT
+
+PERFTEST_OUT=$TEMPDIR/performance-results-$(date +"%Y-%m-%d-%H:%M:%S").txt
+cat $TEMPFILE_HEADER $TEMPFILE_OUT > $PERFTEST_OUT
+
+# remove all tempfiles
+rm -f $TEMPFILE_HEADER $TEMPFILE_OUT $TEMPFILE_DATA $TEMPFILE_LOOPS
+
+echo "Done. Results are in $PERFTEST_OUT"
+
+

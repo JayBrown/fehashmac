@@ -1,0 +1,23 @@
+This list shows the authors of the different algorithms and implementations
+as far as they are documented in the source code that I use here.
+
+md2:    RSA Data Security, Inc. MD2 Message Digest Algorithm
+md4:    RSA Data Security, Inc. MD4 Message Digest Algorithm
+md5:    RSA Data Security, Inc. MD5 Message Digest Algorithm
+rmd128: RIPEMD-160 software written by Antoon Bosselaers,
+        available at http://www.esat.kuleuven.ac.be/~cosicart/ps/AB-9601/
+rmd160: RIPEMD-160 software written by Antoon Bosselaers,
+        available at http://www.esat.kuleuven.ac.be/~cosicart/ps/AB-9601/
+rmd256: RIPEMD-160 software written by Antoon Bosselaers,
+        available at http://www.esat.kuleuven.ac.be/~cosicart/ps/AB-9601/
+rmd320: RIPEMD-160 software written by Antoon Bosselaers,
+        available at http://www.esat.kuleuven.ac.be/~cosicart/ps/AB-9601/
+whirl:  The Whirlpool algorithm was developed by Paulo S. L. M. Barreto 
+        and Vincent Rijmen
+        https://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/whirlpool.zip
+gost:   Markku-Juhani Saarinen <mjos@ssh.fi>
+        Copyright (c) 1998 SSH Communications Security, Finland
+tiger2: Eli Biham (http://www.cs.technion.ac.il/~biham/)
+        Ross Anderson (http://www.cl.cam.ac.uk/~rja14/9
+
+hvf 21.01.2009

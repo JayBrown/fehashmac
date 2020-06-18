@@ -1,0 +1,4 @@
+# sha1 /etc/passwd /etc/group /dev/null 
+sha1 (/etc/passwd) = 3bfe53dda1882d0a60c8a01e3167c0a2f54635dc
+sha1 (/etc/group) = c999fc8f29b1a00a9f539b6b1f3d92816d2f8a49
+sha1 (/dev/null) = da39a3ee5e6b4b0d3255bfef95601890afd80709

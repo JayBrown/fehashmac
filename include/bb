@@ -1,0 +1,75 @@
+
+/*********** MD6-224 definitions *********/
+/* initialize context */
+extern HashReturn MD6_224_init (hashState  *state, int hashbitlen);
+/* update context, may be called many times */
+extern HashReturn  MD6_224_update (
+    hashState state,          /* previously initialized context */
+    const BitSequence *buffer,  /* bit buffer, first bit is LSB in [0] */
+    DataLength databitlen);      /* number of bits to process from buffer */
+/* produce hash and return in hashval */
+extern HashReturn  MD6_224_final (hashState state, BitSequence *hashval);
+/* calculate hash all-in-one */
+HashReturn MD6_224_hash (int hashbitlen, const BitSequence *data,
+                      DataLength databitlen, BitSequence *hashval);
+
+extern HashReturn MD6_224_File (hashState state, FILE *in);
+extern void MD6_224_Print (MD6_CTX *context);
+extern HashReturn MD6_224_HashToByte (hashState state, BYTE *out);
+
+
+/*********** MD6-256 definitions *********/
+/* initialize context */
+extern HashReturn MD6_256_init (hashState  *state, int hashbitlen);
+/* update context, may be called many times */
+extern HashReturn  MD6_256_update (
+    hashState state,          /* previously initialized context */
+    const BitSequence *buffer,  /* bit buffer, first bit is LSB in [0] */
+    DataLength databitlen);      /* number of bits to process from buffer */
+/* produce hash and return in hashval */
+extern HashReturn  MD6_256_final (hashState state, BitSequence *hashval);
+/* calculate hash all-in-one */
+HashReturn MD6_256_hash (int hashbitlen, const BitSequence *data,
+                      DataLength databitlen, BitSequence *hashval);
+
+extern HashReturn MD6_256_File (hashState state, FILE *in);
+extern void MD6_256_Print (MD6_CTX *context);
+extern HashReturn MD6_256_HashToByte (hashState state, BYTE *out);
+
+
+/*********** MD6-384 definitions *********/
+/* initialize context */
+extern HashReturn MD6_384_init (hashState  *state, int hashbitlen);
+/* update context, may be called many times */
+extern HashReturn  MD6_384_update (
+    hashState state,          /* previously initialized context */
+    const BitSequence *buffer,  /* bit buffer, first bit is LSB in [0] */
+    DataLength databitlen);      /* number of bits to process from buffer */
+/* produce hash and return in hashval */
+extern HashReturn  MD6_384_final (hashState state, BitSequence *hashval);
+/* calculate hash all-in-one */
+HashReturn MD6_384_hash (int hashbitlen, const BitSequence *data,
+                      DataLength databitlen, BitSequence *hashval);
+
+extern HashReturn MD6_384_File (hashState state, FILE *in);
+extern void MD6_384_Print (MD6_CTX *context);
+extern HashReturn MD6_384_HashToByte (hashState state, BYTE *out);
+
+/*********** MD6-512 definitions *********/
+/* initialize context */
+extern HashReturn MD6_512_init (hashState  *state, int hashbitlen);
+/* update context, may be called many times */
+extern HashReturn  MD6_512_update (
+    hashState state,          /* previously initialized context */
+    const BitSequence *buffer,  /* bit buffer, first bit is LSB in [0] */
+    DataLength databitlen);      /* number of bits to process from buffer */
+/* produce hash and return in hashval */
+extern HashReturn  MD6_512_final (hashState state, BitSequence *hashval);
+/* calculate hash all-in-one */
+HashReturn MD6_512_hash (int hashbitlen, const BitSequence *data,
+                      DataLength databitlen, BitSequence *hashval);
+
+extern HashReturn MD6_512_File (hashState state, FILE *in);
+extern void MD6_512_Print (MD6_CTX *context);
+extern HashReturn MD6_512_HashToByte (hashState state, BYTE *out);
+

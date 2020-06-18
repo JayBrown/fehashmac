@@ -1,0 +1,642 @@
+--- ./blake_opt32.h.orig	2011-04-09 21:18:32.000000000 +0200
++++ ./blake_opt32.h	2016-08-01 21:40:46.445154900 +0200
+@@ -45,28 +45,6 @@
+ #define NB_ROUNDS32 14
+ #define NB_ROUNDS64 16
+ 
+-#if 0
+-/*
+-  32-bit type (for most systems, including NIST's test machine)
+-*/
+-typedef unsigned int u32;
+-
+-/*
+-  64-bit type (for most systems, including NIST's test machine)
+-*/
+-typedef unsigned long long u64;
+-
+-/*
+-  type for raw data
+-*/
+-typedef unsigned char BitSequence; 
+-
+-/* 
+-  64-bit word 
+-*/
+-typedef unsigned long long DataLength; 
+-#endif
+-
+ 
+ /*
+   byte-to-word conversion and vice-versa (little endian)  
+@@ -94,12 +72,6 @@
+     U32TO8_BE((p) + 4, (u32)((v)      ));	\
+   } while (0)
+ 
+-#if 0
+-/*
+-  error codes
+-*/
+-typedef enum { SUCCESS=0, FAIL=1, BAD_HASHBITLEN=2  } HashReturn;
+-#endif
+ 
+ /* hash output length in bytes */
+ #define HASH_LENGTH_BLAKE_224 28
+@@ -166,74 +138,6 @@
+   BitSequence     out[HASH_LENGTH_BLAKE_512];
+ } BLAKE_CTX;
+ 
+-/* the static functions are defined in groestl-opt.c */
+-#if 0
+-/*
+-  load the hashSate structure (copy hashbitlen...)
+-
+-  INPUT
+-  state: structure that holds the BLAKE_CTX information
+-  hashbitlen: length of the hash output
+-
+-  OUTPUT
+-  SUCCESS on success
+-  BAD_HASHBITLEN if hashbitlen invalid
+-*/
+-static HashReturn Init( BLAKE_CTX * state, int hashbitlen );
+-
+-/*
+-  adds a salt to the hash function (OPTIONAL)
+-  should be called AFTER Init, and BEFORE Update
+-
+-  INPUT
+-  state: BLAKE_CTX structure
+-  salt: the salt, whose length is determined by hashbitlen
+-
+-  OUTPUT
+-  SUCCESS on success
+- */
+-static HashReturn AddSalt( BLAKE_CTX * state, const BitSequence * salt );
+-
+-/*
+-  update the state (chain value) with new data, storing overhead data if necessary
+-
+-  INPUT
+-  state: BLAKE_CTX structure
+-  data: data to hash
+-  databitlen: bit length of the data (not bytes!)
+-
+-  OUTPUT
+-  SUCCESS on success
+-*/
+-static HashReturn Update( BLAKE_CTX * state, const BitSequence * data, DataLength databitlen );
+-
+-/*
+-  finalize the hash, hashing remaining data and padding the message
+-
+-  INPUT
+-  state: BLAKE_CTX structure
+-  hashval: storage for the hash value
+-
+-  OUTPUT
+-  SUCCESS on success
+-*/
+-static HashReturn Final( BLAKE_CTX * state, BitSequence * hashval );
+-
+-/*
+-  all-in-once function
+-
+-  INPUT
+-  cf. above functions
+-
+-  OUTPUT
+-  SUCCESS on success
+-  FAIL if arbitrary failure
+-  BAD_HASHBITLEN if invalid hashbitlen
+-*/
+-static HashReturn Hash( int hashbitlen, const BitSequence * data, DataLength databitlen, 
+-		 BitSequence * hashval );
+-#endif 
+-
+ /*
+   the 10 permutations of {0,...15}
+ */
+--- ./fehashmac-algos.h.orig	2016-03-09 22:39:19.000000000 +0100
++++ ./fehashmac-algos.h	2016-08-01 21:47:17.378621475 +0200
+@@ -805,51 +805,10 @@
+ 		0,	// no base64 
+ 		0,	// no variable length output
+ 	},
+-#if 0
+     /* the simple SHAKE functions are replaced with the XOFSHAKE variants
+      * and the xofshake128, xofshake256 are not callable any more
+      */
+ 	{	"shake128", 
+-		(HASHINIT) SHAKE128_init, 
+-		SHAKE128_update, 
+-		SHAKE128_final, 
+-		SHAKE128_hash, 
+-		free, 
+-		SHAKE128_HashToByte, 
+-		SHAKE128_File, 
+-		SHAKE128_testvector, 
+-		SHAKE128_testvector_bitwise, 
+-		NULL,
+-		HASH_LENGTH_SHAKE128,
+-		HASH_INPUTBUFFER_SHAKE128,
+-		"FIPS PUB 202, August 2015, http://dx.doi.org/10.6028/NIST.FIPS.202",
+-		1, 	// bitwise OK
+-		2,	// KMAC support
+-		1,	// base64 OK
+-		0,	// variable length output OK
+-	},
+-
+-	{	"shake256", 
+-		(HASHINIT) SHAKE256_init, 
+-		SHAKE256_update, 
+-		SHAKE256_final, 
+-		SHAKE256_hash, 
+-		free, 
+-		SHAKE256_HashToByte, 
+-		SHAKE256_File, 
+-		SHAKE256_testvector, 
+-		SHAKE256_testvector_bitwise, 
+-		NULL,
+-		HASH_LENGTH_SHAKE256,
+-		HASH_INPUTBUFFER_SHAKE256,
+-		"FIPS PUB 202, August 2015, http://dx.doi.org/10.6028/NIST.FIPS.202",
+-		1, 	// bitwise OK
+-		2,	// KMAC support
+-		1,	// base64 OK
+-		0,	// variable length output OK
+-	},
+-#else
+-	{	"shake128", 
+ 		(HASHINIT) XOFSHAKE128_init, 
+ 		XOFSHAKE128_update, 
+ 		XOFSHAKE128_final, 
+@@ -857,16 +816,8 @@
+ 		free, 
+ 		XOFSHAKE128_HashToByte, 
+ 		XOFSHAKE128_File, 
+-		/* we suppress the testvectors because the algorithm is identical to
+-		 * shake128
+-		 */
+-#if 0
+-		NULL,
+-		NULL,
+-#else
+ 		SHAKE128_testvector, 
+ 		SHAKE128_testvector_bitwise, 
+-#endif
+ 		NULL,
+ 		HASH_LENGTH_SHAKE128,
+ 		HASH_INPUTBUFFER_SHAKE128,
+@@ -885,16 +836,8 @@
+ 		free, 
+ 		XOFSHAKE256_HashToByte, 
+ 		XOFSHAKE256_File, 
+-		/* we suppress the testvectors because the algorithm is identical to
+-		 * shake256
+-		 */
+-#if 0
+-		NULL,
+-		NULL,
+-#else
+ 		SHAKE256_testvector, 
+ 		SHAKE256_testvector_bitwise, 
+-#endif
+ 		NULL,
+ 		HASH_LENGTH_SHAKE256,
+ 		HASH_INPUTBUFFER_SHAKE256,
+@@ -904,7 +847,6 @@
+ 		1,	// base64 OK
+ 		XOF_LENGTH_XOFSHAKE256,	// variable length output OK, default length
+ 	},
+-#endif
+ 
+ 	{	"md6-224", 
+ 		(HASHINIT) MD6_224_init, 
+@@ -914,13 +856,8 @@
+ 		free, 
+ 		MD6_224_HashToByte, 
+ 		MD6_224_File, 
+-#if 0
+-		NULL,
+-		NULL,
+-#else
+ 		MD6_224_testvector, 
+ 		MD6_224_testvector_bitwise, 
+-#endif
+ 		NULL,
+ 		HASH_LENGTH_MD6_224,
+ 		HASH_INPUTBUFFER_MD6_224,
+@@ -939,13 +876,8 @@
+ 		free, 
+ 		MD6_256_HashToByte, 
+ 		MD6_256_File, 
+-#if 0
+-		NULL,
+-		NULL,
+-#else
+ 		MD6_256_testvector, 
+ 		MD6_256_testvector_bitwise, 
+-#endif
+ 		NULL,
+ 		HASH_LENGTH_MD6_256,
+ 		HASH_INPUTBUFFER_MD6_256,
+@@ -964,13 +896,8 @@
+ 		free, 
+ 		MD6_384_HashToByte, 
+ 		MD6_384_File, 
+-#if 0
+-		NULL,
+-		NULL,
+-#else
+ 		MD6_384_testvector, 
+ 		MD6_384_testvector_bitwise, 
+-#endif
+ 		NULL,
+ 		HASH_LENGTH_MD6_384,
+ 		HASH_INPUTBUFFER_MD6_384,
+@@ -989,13 +916,8 @@
+ 		free, 
+ 		MD6_512_HashToByte, 
+ 		MD6_512_File, 
+-#if 0
+-		NULL,
+-		NULL,
+-#else
+ 		MD6_512_testvector, 
+ 		MD6_512_testvector_bitwise, 
+-#endif
+ 		NULL,
+ 		HASH_LENGTH_MD6_512,
+ 		HASH_INPUTBUFFER_MD6_512,
+--- ./fehashmac.h.orig	2016-03-09 21:38:38.000000000 +0100
++++ ./fehashmac.h	2016-08-01 21:50:07.754194157 +0200
+@@ -147,12 +147,6 @@
+ 	int					hmacflag;	/* 1 if hmac requested */
+ 	int					kmacflag;	/* 1 if kmac requested */
+ 	struct	extra		extra;		/* extra data for XOFSHAKEnnn	*/
+-#if 0
+-	int					base64flag;	/* 1 if base64 requested */
+-	int					xofflag;	/* 1 if variable length output is requested */
+-	long long			xoflength;	/* variable length output */
+-	int					binoutflag;	/* 1 if binary (unformatted) output requested */
+-#endif
+ };
+ 
+ /* generic head of all contextes	*/
+@@ -318,15 +312,9 @@
+ struct token *getnexttoken ();
+ 
+ void ReadDigest (char *listfilename);
+-#if 0
+-int  TestSuite (struct hash_algo *a, struct test_results *t);
+-int  TestSuiteBitwise (struct hash_algo *a, struct test_results *t);
+-int  TestSuiteHMAC (struct hash_algo *a, struct test_results *t);
+-#else
+ int  TestSuite (struct use_algo *ua, struct test_results *t);
+ int  TestSuiteBitwise (struct use_algo *ua, struct test_results *t);
+ int  TestSuiteHMAC (struct use_algo *ua, struct test_results *t);
+-#endif
+ void DigestString (struct use_algo *ua, char *string);
+ void    TimeTrial();
+ void DigestHexString (struct use_algo *ua, char *hexstring,
+--- ./groestl-opt.h.orig	2015-04-19 18:03:12.000000000 +0200
++++ ./groestl-opt.h	2016-08-01 21:52:44.542416682 +0200
+@@ -102,27 +102,12 @@
+ #define HASH_INPUTBUFFER_BITS_GROESTL_384   (8*SIZE1024)
+ #define HASH_INPUTBUFFER_BITS_GROESTL_512   (8*SIZE1024)
+ 
+-#if 0
+-/* hash input buffer length in 32 or 64 bit words as implemented */
+-#define HASH_INPUTBUFFER_W_GROESTL_224  16
+-#define HASH_INPUTBUFFER_W_GROESTL_256  16
+-#define HASH_INPUTBUFFER_W_GROESTL_384  16
+-#define HASH_INPUTBUFFER_W_GROESTL_512  16
+-#endif
+-
+ /* hash magic values - GROESTxxx etc in little endian notation */
+ #define HASH_MAGIC_GROESTL_224  0x32325453454f5247ULL         /* GROEST224   */
+ #define HASH_MAGIC_GROESTL_256  0x35325453454f5247ULL         /* GROEST256   */
+ #define HASH_MAGIC_GROESTL_384  0x38335453454f5247ULL         /* GROEST384   */
+ #define HASH_MAGIC_GROESTL_512  0x31355453454f5247ULL         /* GROEST512   */
+ 
+-/* NIST API begin */
+-#if 0
+-typedef unsigned char BitSequence;
+-typedef unsigned long long DataLength;
+-typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
+-#endif
+-
+ /*
+  *	hashstructure
+  *	GROESTL has one common structure for all hash sizes
+@@ -143,18 +128,6 @@
+   BitSequence     out[HASH_LENGTH_GROESTL_512];
+ } GROESTL_CTX;
+ 
+-/* these static function declarations go into the source file */
+-#if 0
+-static HashReturn Init(GROESTL_CTX*, int);
+-static HashReturn Update(GROESTL_CTX*, const BitSequence*, DataLength);
+-static HashReturn Final(GROESTL_CTX*, BitSequence*);
+-static HashReturn Hash(int, const BitSequence*, DataLength, BitSequence*);
+-/* NIST API end   */
+-
+-/* helper functions */
+-static void PrintHash(const BitSequence*, int);
+-#endif 
+-
+ 
+ /*
+  *	hashstructure
+--- ./jh_ansi_opt32.h.orig	2011-04-10 16:28:36.000000000 +0200
++++ ./jh_ansi_opt32.h	2016-08-01 21:54:25.811890421 +0200
+@@ -36,19 +36,6 @@
+ #include    <stdlib.h>
+ #include <string.h>
+ 
+-#if 0
+-/*for LP64, "int" is 32-bit integer, while "long" is 64-bit integer*/
+-#if defined(_LP64)
+-      typedef unsigned int uint32;
+-#else
+-      typedef unsigned long uint32;
+-#endif
+-
+-typedef unsigned char BitSequence;
+-typedef unsigned long long DataLength;
+-typedef enum {SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2} HashReturn;
+-#endif
+-
+ /*define data alignment for different C compilers*/
+ #if defined(__GNUC__)
+       #define DATA_ALIGN16(x) x __attribute__ ((aligned(16)))
+--- ./keccakNISTInterface.h.orig	2011-04-11 10:56:56.000000000 +0200
++++ ./keccakNISTInterface.h	2016-08-01 21:55:26.102294410 +0200
+@@ -50,14 +50,6 @@
+ 
+ #include "keccakSponge.h"
+ 
+-#if 0
+-typedef unsigned char BitSequence;
+-typedef unsigned long long DataLength;
+-typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
+-
+-typedef spongeState hashState;
+-#endif
+-
+ /**
+   * Function to initialize the state of the Keccak[r, c] sponge function.
+   * The rate r and capacity c values are determined from @a hashbitlen.
+--- ./md6.h.orig	2016-03-07 21:22:49.000000000 +0100
++++ ./md6.h	2016-08-01 21:58:20.270175303 +0200
+@@ -430,13 +430,6 @@
+ #elif ( md6_r * md6_c + md6_n >= 5000 )
+   /* since md6_standard_compress allocates fixed-size array A[5000] */
+   #error "md6.h Fatal error: r*c+n must be < 5000."
+-#if 0
+-  /* "sizeof" doesn't work in preprocessor, these checks don't work */
+-  #elif ( (md6_v != 0) && (md6_v != (sizeof(md6_control_word)/(md6_w/8))) )
+-    #error "md6.h Fatal error: md6_v must be 0 or match md6_control_word size."
+-  #elif ( (md6_u != 0) && (md6_u != (sizeof(md6_nodeID)/(md6_w/8))) )
+-    #error "md6.h Fatal error: md6_u must be 0 or match md6_nodeID size."
+-#endif
+ #endif
+ 
+ 
+--- ./md6_nist.h.orig	2016-03-08 21:17:03.000000000 +0100
++++ ./md6_nist.h	2016-08-01 21:59:05.398088018 +0200
+@@ -79,14 +79,6 @@
+ #include <string.h>
+ #include    "md6.h"
+ 
+-#if 0
+-// these types are defined in generic.h
+-typedef unsigned char BitSequence;
+-typedef unsigned long long DataLength;
+-typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
+-typedef md6_state hashState;
+-#endif
+-
+ /* hash output length in bytes */
+ #define HASH_LENGTH_MD6_224 28
+ #define HASH_LENGTH_MD6_256 32
+--- ./rmdx.h.orig	2009-02-15 18:51:41.000000000 +0100
++++ ./rmdx.h	2016-08-01 22:00:31.778632496 +0200
+@@ -130,16 +130,6 @@
+ extern void RIPEMD128_Print (RIPEMD128_CTX *context);
+ extern HashReturn RIPEMD128_HashToByte (hashState state, BYTE *out);
+ 
+-#if 0
+-extern RIPEMD128_CTX   *RIPEMD128_init ();    /* initialize context */
+-extern void RIPEMD128_update (RIPEMD128_CTX *context, unsigned char *buffer, unsigned int n);
+-extern void RIPEMD128_final (RIPEMD128_CTX *context);
+-extern void RIPEMD128_File (RIPEMD128_CTX *context, FILE *in);
+-extern void RIPEMD128_Print (RIPEMD128_CTX *context);
+-extern void RIPEMD128_HashToByte (RIPEMD128_CTX *context, char *out);
+-#endif
+-
+-
+ HashReturn RIPEMD160_init (hashState  *state, int hashbitlen);
+ HashReturn  RIPEMD160_update (
+     hashState state,            /* previously initialized context */
+@@ -154,15 +144,6 @@
+ extern void RIPEMD160_Print (RIPEMD160_CTX *context);
+ extern HashReturn RIPEMD160_HashToByte (hashState state, BYTE *out);
+ 
+-#if 0
+-extern RIPEMD160_CTX   *RIPEMD160_init ();    /* initialize context */
+-extern void RIPEMD160_update (RIPEMD160_CTX *context, unsigned char *buffer, unsigned int n);
+-extern void RIPEMD160_final (RIPEMD160_CTX *context);
+-extern void RIPEMD160_File (RIPEMD160_CTX *context, FILE *in);
+-extern void RIPEMD160_Print (RIPEMD160_CTX *context);
+-extern void RIPEMD160_HashToByte (RIPEMD160_CTX *context, char *out);
+-#endif
+-
+ HashReturn RIPEMD256_init (hashState  *state, int hashbitlen);
+ HashReturn  RIPEMD256_update (
+     hashState state,            /* previously initialized context */
+@@ -177,16 +158,6 @@
+ extern void RIPEMD256_Print (RIPEMD256_CTX *context);
+ extern HashReturn RIPEMD256_HashToByte (hashState state, BYTE *out);
+ 
+-
+-#if 0
+-extern RIPEMD256_CTX   *RIPEMD256_init ();    /* initialize context */
+-extern void RIPEMD256_update (RIPEMD256_CTX *context, unsigned char *buffer, unsigned int n);
+-extern void RIPEMD256_final (RIPEMD256_CTX *context);
+-extern void RIPEMD256_File (RIPEMD256_CTX *context, FILE *in);
+-extern void RIPEMD256_Print (RIPEMD256_CTX *context);
+-extern void RIPEMD256_HashToByte (RIPEMD256_CTX *context, char *out);
+-#endif
+-
+ HashReturn RIPEMD320_init (hashState  *state, int hashbitlen);
+ HashReturn  RIPEMD320_update (
+     hashState state,            /* previously initialized context */
+@@ -201,13 +172,4 @@
+ extern void RIPEMD320_Print (RIPEMD320_CTX *context);
+ extern HashReturn RIPEMD320_HashToByte (hashState state, BYTE *out);
+ 
+-#if 0
+-extern RIPEMD320_CTX   *RIPEMD320_init ();    /* initialize context */
+-extern void RIPEMD320_update (RIPEMD320_CTX *context, unsigned char *buffer, unsigned int n);
+-extern void RIPEMD320_final (RIPEMD320_CTX *context);
+-extern void RIPEMD320_File (RIPEMD320_CTX *context, FILE *in);
+-extern void RIPEMD320_Print (RIPEMD320_CTX *context);
+-extern void RIPEMD320_HashToByte (RIPEMD320_CTX *context, char *out);
+-#endif
+-
+ #endif
+--- ./SHA3-KeccakHash.h.orig	2016-02-29 18:05:38.000000000 +0100
++++ ./SHA3-KeccakHash.h	2016-08-01 22:03:42.973681727 +0200
+@@ -41,13 +41,6 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#if 0
+-// these types are defined in generic.h
+-typedef unsigned char BitSequence;
+-typedef size_t DataLength;
+-typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
+-#endif
+-
+ /* hash output length in bytes */
+ #define HASH_LENGTH_SHA3_224 28
+ #define HASH_LENGTH_SHA3_256 32
+@@ -55,20 +48,14 @@
+ #define HASH_LENGTH_SHA3_512 64
+ #define HASH_LENGTH_SHAKE128  512
+ #define HASH_LENGTH_SHAKE256  512
+-#if 0
+-/* XOF lengths can be arbitrary, but should a multiple of 12 for base64
+- * processing. We choose 120 bytes (960 bits)
+- */
+-#define XOF_LENGTH_XOFSHAKE128	120
+-#define XOF_LENGTH_XOFSHAKE256	120
+-#else
++
+ /* XOF lengths can be arbitrary, but should a multiple of 12 for base64
+  * processing. We choose 516 bytes (4128 bits) to make life in 
+  * testsuite easier
+  */
+ #define XOF_LENGTH_XOFSHAKE128	516
+ #define XOF_LENGTH_XOFSHAKE256	516
+-#endif
++
+ /* default XOF length is 512 bytes if nothing else specified    */
+ #define XOF_DEFAULT_LENGTH_XOFSHAKE128	512
+ #define XOF_DEFAULT_LENGTH_XOFSHAKE256	512
+@@ -80,13 +67,8 @@
+ #define HASH_BITLENGTH_SHA3_512  512
+ #define HASH_BITLENGTH_SHAKE128  4096
+ #define HASH_BITLENGTH_SHAKE256  4096
+-#if 0
+-#define XOF_BITLENGTH_XOFSHAKE128	960
+-#define XOF_BITLENGTH_XOFSHAKE256	960
+-#else
+ #define XOF_BITLENGTH_XOFSHAKE128	4128
+ #define XOF_BITLENGTH_XOFSHAKE256	4128
+-#endif
+ 
+ /* hash input buffer length in bytes */
+ #define HASH_INPUTBUFFER_SHA3_224    144
+@@ -116,14 +98,6 @@
+ /* must be equal to HASH_BITLENGTH_SHAKE128 and HASH_BITLENGTH_SHAKE256 */
+ #define SqueezingOutputLength 4096
+ 
+-#if 0
+-typedef struct {
+-    Keccak_SpongeInstance sponge;
+-    unsigned int fixedOutputLength;
+-    unsigned char delimitedSuffix;
+-} Keccak_HashInstance;
+-#endif
+-
+ typedef struct {
+     /* required field: hashbitlen   */
+     unsigned int    hashbitlen;
+@@ -184,10 +158,9 @@
+ 
+ /* this is how we pass extra data to the XOF functions	*/
+ typedef struct	extra {
+-#if 1
++
+     /* magic token - SHA3-xxx in LSB notation   */
+     DataLength      magic;
+-#endif
+ 
+ 	/* base64 output flag	*/
+ 	int	base64flag;
+--- ./SHA3-KeccakSponge.h.orig	2015-01-08 17:52:06.000000000 +0100
++++ ./SHA3-KeccakSponge.h	2016-08-01 22:04:48.132333074 +0200
+@@ -38,11 +38,9 @@
+ #define _SHA3_KeccakSponge_h_
+ 
+ // use opt64 version
+-#if 1
++
+ #include "SHA3-SnP-interface-opt64.h"
+-#else
+-#include "SHA3-SnP-interface.h"
+-#endif
++
+ #include <string.h>
+ 
+ // on Mac OS-X and possibly others, ALIGN(x) is defined in param.h, and -Werror chokes on the redef.
+--- ./skein_SHA3api_ref.h.orig	2015-04-19 18:10:25.000000000 +0200
++++ ./skein_SHA3api_ref.h	2016-08-01 22:05:46.353299759 +0200
+@@ -92,19 +92,6 @@
+ #define HASH_MAGIC_SKEIN_512  0x32313549454b53ULL         /* SKEI512   */
+ #define HASH_MAGIC_SKEIN_1024  0x3432303149454b53ULL        /* SKEI1024   */
+ 
+-#if 0
+-typedef enum
+-    {
+-    SUCCESS     = SKEIN_SUCCESS,
+-    FAIL        = SKEIN_FAIL,
+-    BAD_HASHLEN = SKEIN_BAD_HASHLEN
+-    }
+-    HashReturn;
+-
+-typedef size_t   DataLength;                /* bit count  type */
+-typedef u08b_t   BitSequence;               /* bit stream type */
+-#endif
+-
+ typedef struct
+ {
+     int hashbitlen;                         /* the message digest size */
+--- ./tiger.h.orig	2011-04-10 16:27:50.000000000 +0200
++++ ./tiger.h	2016-08-01 22:06:43.075331393 +0200
+@@ -30,10 +30,6 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#if 0
+-typedef unsigned int uint32;
+-#endif
+-
+ /* hash output length in bytes */
+ #define HASH_LENGTH_TIGER 24
+ 
+--- ./whirl.h.orig	2011-04-09 16:23:06.000000000 +0200
++++ ./whirl.h	2016-08-01 22:07:41.000558263 +0200
+@@ -43,9 +43,6 @@
+ typedef signed short s16;
+ typedef signed int s32;
+ typedef unsigned short u16;
+-#if 0
+-typedef unsigned int u32;
+-#endif
+ 
+ #define ONE32   0xffffffffU
+ 
+@@ -73,9 +70,6 @@
+ #define LL(v)   (v##i64)
+ #define ONE64   LL(0xffffffffffffffff)
+ #else  /* !_MSC_VER */
+-#if 0
+-typedef unsigned long long u64;
+-#endif
+ typedef signed long long s64;
+ #define LL(v)   (v##ULL)
+ #define ONE64   LL(0xffffffffffffffff)

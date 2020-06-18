@@ -1,0 +1,223 @@
+		FEHASHMAC Version 2.1   07.09.2016
+
+		Download and Verify
+
+The latest and all earlier releases can be downloaded from
+http://fehashmac.sourceforge.net
+
+To verify the download, get the hash file fehashmac-n.n.n.tar.gz.hash
+and execute the command
+ $ fehashmac -c fehashmac-n.n.n.tar.gz.hash
+This will test all algorithms, HMACs, KMACs and Base64.
+
+		Documentation
+
+See README.html in the Doc directory
+
+New Features
+------------
+
+*07.09.2016: Replace SHA3, keccak with new code base*
+
+*02.08.2016: General cleanup*
+            One potential buffer overrun in keccak has been fixed.
+            The code has been checked against STACK for null pointers,
+            three finding have been fixed. Doc has been reorganized.
+            A shell script, md5sum2md5 has been added to convert 
+            from md5sum syntax to md5 style.
+
+*11.07.2016: MD6 algorithms have been added*
+            md6-224, md6-256, md6-384, md6-512, 
+            although they had been retired from the SHA3 competition. 
+            Performance comparisons are available in the Doc directory.
+
+*29.02.2016: SHA3 algorithms are now based on FIPS 202 issued August 2015.*
+            shake128, shake256 support now extendable length output,
+            the previously defined algos xofshake128, xofshake256 are
+            now superseded by shake128, shake256 and are therefore abandoned.
+
+*20.05.2015: KMAC implemented for SHA3 algorithms and XOFs.*
+            README updated. Algorithm kmac-all selects all algorithms
+            that support KMAC, all-b64 selects all algos that support
+            Base64 encoding, and similarly kmac-all-b64. The KMAC key can
+            either be an ASCII string (up to 253 bytes long, --key=xxx) or a 
+            hex string (--hexkey=nnn), whose length in bits may be specified
+            with --keylength=bbb (max value 254*8-1= 2031 bits).
+
+*01.05.2015: Extendable Output Functions (XOFs) xofshake128, xofshake256.*
+            Output length can be specified to an arbitrary number of
+            bytes up to 9 Exabytes or infinity. BASE64 output is OK.
+
+*27.02.2015: BASE64 support for SHAKE.*
+            SHAKE can now produce BASE64 output.
+
+*18.01.2015: SHA3 performance:*  +
+            SHA3 is now implemented based on the 
+            KeccakWidth1600Opt64LCu6 version in the 
+            KeccakCodePackage (downloaded on 11.12.2014): 
+            +$ git clone https://github.com/gvanas/KeccakCodePackage+
+            This version gives good performance both
+            on 32 and 64 bit Intel platforms as well as on an
+            AMD GEODE based appliance. Reports about other platforms
+            like SPARC are welcome.
+
+*02.01.2015: The 6 SHA3 algorithms are now supported,*  +
+            based on the
+            Draft FIPS Pub 202 (May 2014): sha3-224, sha3-256,
+            sha3-384, sha3-512 and the two extendable output functions
+            (XOF) shake128 and shake256. Test vectors are included.
+            Our implementation is based on the reference implementation,
+            a more efficient implementation will follow in an update.
+
+*28.01.2012: Multiple algorithms (including HMACs) can be specified
+            simultaneously.* +
+            The data files are read only once, and all
+            hashes are calculated in parallel.
+            As an option, algorithm "all" expands to the list of all
+            known algorithms, which are thus calculated in parallel for
+            each data file or string. 
+            Likewise, algorithm "hmac-all" expands to all known 
+            HMAC algorithms.
+            The results of the --check option and the test cases are 
+            nicely summarized.
+
+*29.03.2011: Support for the sha512-224 sha512-256 algorithms*
+
+*14.04.2011: HMAC test vectors added* for MD5, SHA1, RMD128, RMD160.
+            List of algorithms is now sorted alphabetically.
+
+*13.04.2011: Support for all SHA-3 finalists:* BLAKE, GROESTL, JH, KECCAK,
+            SKEIN for 224. 256. 384, 512 bits hash length, 
+            SKEIN also for 1024 bits.
+            They all support bitwise operation, bitwise test vectors are
+            included (taken from the SHA-3 submissions).
+            HMAC support upgraded to FIPS PUB 198-1 (2008),
+            HMAC test vectors added for sha{224, 256, 384, 512}.
+
+Purpose
+-------
+
+FEHASHMAC is a collection of publicly known hash algorithms integrated
+          into a command-line utility. FEHASHMAC also contains a set
+          of known test vectors and results for each algorithm
+          such that the correct implementation for each hardware
+          platform and compiler version can directly be verified.
+
+FEHASHMAC supports bitwise hash calculation for algorithms with
+          available bitwise test vectors. Currently this applies to
+          the SHA algorithms: sha1, sha224, sha256, sha384, sha512,
+          and to the SHA3 algorithms: sha3-224, sha3-256, sha3-384,
+          sha3-512, shake128, shake256. The so-called Gillogly bitwise
+          input has only been tested for sha1, but is also implemented
+          in the SHA-2 hashes.
+
+Bitwise hash calculation is also supported in sha512-224, sha512-256,
+          whirl, but there are no bitwise test vectors available.
+
+FEHASHMAC can also calculate hashed message authentication codes (HMAC)
+          as specified in RFC 2104 and extended to arbitrary-length
+          keys in FIPS PUB 198-1. The HMAC key can be specified as an
+          ASCII string or as a hex string, and HMACs can be calculated
+          for files, strings, and hex strings. 
+          For SHA3, the KMAC message authentication is available, not HMAC.
+
+To simplify usage, symbolic links with the algorithm name allow to call
+fehashmac without the -a option. A prepended hmac- will automatically
+enable HMAC mode.
+
+Hashes and HMACs/KMACs of files can be verified with the --check option.
+
+.Supported Algorithms (52) in 14 families:
+**************************************************************
+
+blake224 blake256 blake384 blake512 
+
+gost 
+
+groestl224 groestl256 groestl384 groestl512 
+
+jh224 jh256 jh384 jh512 
+
+keccak224 keccak256 keccak384 keccak512 
+
+lash160 lash256 lash384 lash512 
+
+md2 md4 md5 md6-224 md6-256 md6-384 md6-512
+
+rmd128 rmd160 rmd256 rmd320 
+
+sha1 
+
+sha224 sha256 sha384 sha512 sha512-224 sha512-256 
+
+sha3-224 sha3-256 sha3-384 sha3-512 shake128 shake256 
+
+skein1024 skein224 skein256 skein384 skein512 
+
+tiger2 
+
+whirl 
+**************************************************************
+
+.Supported MAC Algorithms (46): 
+**************************************************************
+
+hmac-blake224 hmac-blake256 hmac-blake384 hmac-blake512 
+
+hmac-gost 
+
+hmac-groestl224 hmac-groestl256 hmac-groestl384 hmac-groestl512 
+
+hmac-jh224 hmac-jh256 hmac-jh384 hmac-jh512 
+
+hmac-keccak224 hmac-keccak256 hmac-keccak384 hmac-keccak512 
+
+hmac-lash160 hmac-lash256 hmac-lash384 hmac-lash512 
+
+hmac-md2 hmac-md4 hmac-md5 
+         hmac-md6-224 hmac-md6-256 hmac-md6-384 hmac-md6-512
+
+hmac-rmd128 hmac-rmd160 hmac-rmd256 hmac-rmd320 
+
+hmac-sha1 
+
+hmac-sha224 hmac-sha256 hmac-sha384 hmac-sha512 hmac-sha512-224 
+            hmac-sha512-256 
+
+hmac-skein224 hmac-skein256 hmac-skein384 hmac-skein512
+            hmac-skein1024 
+
+hmac-tiger2 
+
+hmac-whirl 
+**************************************************************
+
+.Supported KMAC Algorithms (6): 
+**************************************************************
+
+kmac-sha3-224 kmac-sha3-256 kmac-sha3-384 kmac-sha3-512 
+              kmac-shake128 kmac-shake256
+**************************************************************
+
+.Algorithms with Base64 Encoding (2): 
+**************************************************************
+
+shake128-b64 shake256-b64 
+**************************************************************
+
+.KMAC Algorithms with Base64 Encoding (2): 
+**************************************************************
+
+kmac-shake128-b64 kmac-shake256-b64 
+
+**************************************************************
+
+.Extendable Output Length (XOF) Algorithms (2):
+**************************************************************
+
+shake128 shake256
+
+**************************************************************
+
+SHA3 supports KMAC, not HMAC
+

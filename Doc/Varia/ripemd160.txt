@@ -1,0 +1,449 @@
+/* http://www.esat.kuleuven.ac.be/~bosselae/ripemd160.html
+ * copied from web site on 13.08.01 hvf
+ */
+
+  ------------------------------------------------------------------------
+ The hash function RIPEMD-160                                       [Image]
+
+  ------------------------------------------------------------------------
+
+*What is RIPEMD-160?
+*Where do I find a description of RIPEMD-160?
+*And what about SHA-1?
+*How fast is RIPEMD-160?
+*Patents, Object Identifiers, Bibliography.
+*Optional extensions to 256 and 320 bit hash results.
+*MACs based on RIPEMD-160.[Image]
+  1. MDx-MAC for RIPEMD-160.
+  2. HMAC-RIPEMD-160: test vectors.
+*OAEP-encoding based on RIPEMD-160: test vectors[Image]
+*Still more questions?
+  ------------------------------------------------------------------------
+
+What is RIPEMD-160?
+
+RIPEMD-160 is a 160-bit cryptographic hash function, designed by Hans
+Dobbertin, Antoon Bosselaers, and Bart Preneel. It is intended to be used as
+a secure replacement for the 128-bit hash functions MD4, MD5, and RIPEMD.
+MD4 and MD5 were developed by Ron Rivest for RSA Data Security, while RIPEMD
+was developed in the framework of the EU project RIPE (RACE Integrity
+Primitives Evaluation, 1988-1992). There are two good reasons to consider
+such a replacement:
+
+   * A 128-bit hash result does not offer sufficient protection anymore. A
+     brute force collision search attack on a 128-bit hash result requires
+     264 or about 2.1019 evaluations of the function. In 1994 Paul van
+     Oorschot and Mike Wiener showed that this brute-force job can be done
+     in less than a month with a $10 million investment (``Parallel
+     collision search with applications to hash functions and discrete
+     logarithms,'' 2nd ACM Conference on Computer and Communications
+     Security, ACM Press, 1994, pp. 210-218). This cost is expected to halve
+     every 18 months.
+   * In the first half of 1995 Hans Dobbertin found collisions for a version
+     of RIPEMD restricted to two rounds out of three. Using similar
+     techniques Hans produced in the Fall of 1995 collisions for (all 3
+     rounds of) MD4. The attack on MD4 requires only a few seconds on a PC,
+     and still leaves some freedom as to the choice of the message, clearly
+     ruling out MD4 as a collision resistant hash function. Shortly
+     afterwards, in the Spring of 1996, Hans also found collisions for the
+     compression function of MD5. Although not yet extended to collisions
+     for MD5 itself, this attack casts serious doubts on the strength of MD5
+     as a collision resistant hash function. RSA Data Security, for which
+     Ron Rivest developed MD4 and MD5, recommend that MD4 should not longer
+     be used, and that MD5 should not be used for future applications that
+     require the hash function to be collision-resistant.
+
+RIPEMD-160 is a strengthened version of RIPEMD with a 160-bit hash result,
+and is expected to be secure for the next ten years or more. The design
+philosophy is to build as much as possible on experience gained by
+evaluating MD4, MD5, and RIPEMD. Like its predecessors, RIPEMD-160 is tuned
+for 32-bit processors, which we feel will remain important in the coming
+decade.
+
+RIPEMD-128 is a plug-in substitute for RIPEMD (or MD4 and MD5, for that
+matter) with a 128-bit result. In view of the result of Paul van Oorschot
+and Mike Wiener mentioned earlier, 128-bit hash results do not offer
+sufficient protection for the next ten years, and applications using 128-bit
+hash functions should consider upgrading to a 160-bit hash function.
+
+RIPEMD-256 and RIPEMD-320 are optional extensions of, respectively,
+RIPEMD-128 and RIPEMD-160, and are intended for applications of hash
+functions that require a longer hash result without needing a larger
+security level.
+
+  ------------------------------------------------------------------------
+Where do I find a description of RIPEMD-160?
+
+A full description and reference C software for the RIPEMD-160 and
+RIPEMD-128 hash functions are available: ps, pdf. The implementations are
+written for the sole purpose of documentation. No optimization whatsoever is
+performed: only readability and portability were kept in mind.
+
+   * H. Dobbertin, A. Bosselaers, B. Preneel, ``RIPEMD-160, a strengthened
+     version of RIPEMD'' (ps, pdf). This article contains a description of
+     both RIPEMD-160 and RIPEMD-128. It is an updated and corrected version
+     of the article published in Fast Software Encryption, LNCS 1039, D.
+     Gollmann, Ed., Springer-Verlag, 1996, pp. 71-82. See the bibliography
+     section below for more descriptions.
+   * rmd160.c: source code for RIPEMD-160
+   * rmd160.h: include file for RIPEMD-160.
+   * rmd128.c: source code for RIPEMD-128
+   * rmd128.h: include file for RIPEMD-128.
+   * hashtest.c: driver for both RIPEMD-160 and RIPEMD-128.
+
+This figure gives you a first idea of RIPEMD-160. Pseudocode for RIPEMD-160
+and RIPEMD-128 are provided for, as well as test vectors, which are given in
+the table below. The messages are given in ASCII format, while the
+corresponding hash results are in hexadecimal format.
+
+ Message                 Hash result using RIPEMD-160         Hash result using RIPEMD-128
+ "" (empty string) 9c1185a5c5e9fc54612808977ee8f548b2258d31 cdf26213a150dc3ecb610f18f6b38b46
+ "a"               0bdc9d2d256b3ee9daae347be6f4dc835a467ffe 86be7afa339d0fc7cfc785e72f578d33
+ "abc"             8eb208f7e05d987a9b044a8e98c6b087f15a0bfc c14a12199c66e4ba84636b0f69144c77
+ "message digest"  5d0689ef49d2fae572b881b123a85ffa21595f36 9e327b3d6e523062afc1132d7df9d1b8
+ "a...z"1          f71c27109c692c1b56bbdceb5b9d2865b3708dbc fd2aa607f71dc8f510714922b371834e
+
+ "abcdbcde...nopq"212a053384a9c0c88e405a06c27dcf49ada62eb2b a1aa0689d0fafa2ddc22e88b49133a06
+
+ "A...Za...z0...9"3b0e20b6e3116640286ed3a87a5713079b21f5189 d1e959eb179c911faea4624c60c5c702
+
+ 8 times
+ "1234567890"      9b752e45573d4b39f4dbd3323cab82bf63326bfb 3f45ef194732c2dbb2c4a2c769795fa3
+ 1 million times
+ "a"               52783243c1697bdbe16d37f97f68f08325dc1528 4a7f5723f954eba1216c9d8f6320431f
+
+  1. "abcdefghijklmnopqrstuvwxyz"
+  2. "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+  3. "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+  ------------------------------------------------------------------------
+And what about SHA-1?
+
+An alternative to RIPEMD-160 is SHA-1. It also has a 160-bit hash result,
+and because of some of its properties it is quite likely that it is not
+vulnerable to the known attacks on the MD4-like hash functions. However, and
+in contrast to RIPEMD-160, both its design criteria and the attack on the
+first version are secret. A theoretical attack on the compression function
+of the first version with complexity 261 was found by Florent Chabaud and
+Antoine Joux, ``Differential Collisions in SHA-0,'' Advances in Cryptology -
+Crypto'98, LNCS 1462, H. Krawczyk, Ed., Springer-Verlag, 1998, pp. 56-71.
+
+  ------------------------------------------------------------------------
+How fast is RIPEMD-160?
+
+The following table gives an idea of the performance of the different
+MD4-like hash functions. The implementations are written in 80x86 assembly
+language and are optimized for the Pentium processor. It is assumed that
+both code and data resides in the on-chip caches. Under these conditions the
+cycle figures are independent of the clock speed, and the throughput figures
+scale with the clock speed.
+
+              Algorithm cycles Mbit/sec Mbyte/sec   relative
+                                                  performance
+              MD4          241    191.2     23.90     1.00
+              MD5          337    136.7     17.09     0.72
+              RIPEMD       480     96.0     12.00     0.50
+              RIPEMD-128   592     77.8      9.73     0.41
+              SHA-1        837     55.1      6.88     0.29
+              RIPEMD-160  1013     45.5      5.68     0.24
+                 Table 1: Performance of optimized assembly
+                  language implementations of MD4-like hash
+              functions on a 90 MHz Pentium using a 32-bit flat
+               memory model (i.e., running in native protected
+                                   mode).
+
+More information on these implementations can be found in: A. Bosselaers, R.
+Govaerts and J. Vandewalle, ``Fast hashing on the Pentium,'' (ps, pdf)
+Advances in Cryptology, Proceedings Crypto'96, LNCS 1109, N. Koblitz, Ed.,
+Springer-Verlag, 1996, pp. 298-312, and in the short note ``Even faster
+hashing on the Pentium,'' (ps, pdf) presented at the rump session of
+Eurocrypt'97.
+
+  ------------------------------------------------------------------------
+Patents, Object Identifiers, Bibliography.
+
+The authors of RIPEMD-160 and RIPEMD-128 do not hold any patents on the
+algorithms (nor on the optional extensions), and are also not aware of any
+patents on these algorithms. Naturally, if you do decide to use either of
+them, we would love to hear about it.
+
+RIPEMD-160, RIPEMD-128 and the optional extension RIPEMD-256 have object
+identifiers defined by the ISO-identified organization TeleTrusT, both as
+hash algorithm and in combination with RSA.
+
+             ISO                               {1}
+             identified organization           {1.3}
+             teletrust                         {1.3.36}
+             algorithm                         {1.3.36.3}
+                hashAlgorithm                  {1.3.36.3.2}
+                   ripemd160                   {1.3.36.3.2.1}
+                   ripemd128                   {1.3.36.3.2.2}
+                   ripemd256                   {1.3.36.3.2.3}
+                signatureAlgorithm             {1.3.36.3.3}
+                   rsaSignature                {1.3.36.3.3.1}
+                      rsaSignatureWithripemd160{1.3.36.3.3.1.2}
+                      rsaSignatureWithripemd128{1.3.36.3.3.1.3}
+                      rsaSignatureWithripemd256{1.3.36.3.3.1.4}
+
+RIPEMD-160 is also part of the ISO/IEC international standard ISO/IEC
+10118-3:1998 on dedicated hash functions, together with RIPEMD-128 and
+SHA-1.
+
+More information about RIPEMD-160 can, e.g., be found in the following
+publications:
+
+  1. H. Dobbertin, A. Bosselaers, B. Preneel, ``RIPEMD-160, a strengthened
+     version of RIPEMD,'' (ps, pdf). Fast Software Encryption, LNCS 1039, D.
+     Gollmann, Ed., Springer-Verlag, 1996, pp. 71-82.
+  2. H. Dobbertin, ``Digitale Fingerabdrücke; Sichere Hashfunktionen für
+     digitale Signaturen,'' Datenschutz und Datensicherheit, Vol. 21, No. 2,
+     1997, pp. 82-87.
+  3. ISO/IEC 10118-3:1998, ``Information technology - Security techniques -
+     Hash-functions - Part 3: Dedicated hash-functions,'' International
+     Organization for Standardization, Geneva, Switzerland, 1998.
+  4. A. Menezes, P. van Oorschot, S. Vanstone, Handbook of Applied
+     Cryptography, CRC press, 1996, Section 9.4.2, pp. 349-351 (ps, pdf).
+  5. A. Bosselaers, H. Dobbertin, B. Preneel, ``The RIPEMD-160 cryptographic
+     hash function,'' Dr. Dobb's Journal, Vol. 22, No. 1, January 1997, pp.
+     24-28.
+  6. B. Preneel, A. Bosselaers, H. Dobbertin, ``The cryptographic hash
+     function RIPEMD-160,'' CryptoBytes, Vol. 3, No. 2, 1997, pp. 9-14.
+
+  ------------------------------------------------------------------------
+Optional extensions to 256 and 320 hash results: RIPEMD-256 and RIPEMD-320
+
+Some applications of hash functions require a longer hash result without
+needing a larger security level. To this end RIPEMD-256 and RIPEMD-320 are
+constructed from, respectively, RIPEMD-128 and RIPEMD-160 by initializing
+the two parallel lines with different initial values, omitting the
+combination of the two lines at the end of every application of the
+compression function, and exchanging a chaining variable between the 2
+parallel lines after each round. Remark that the security level of the
+320-bit extension of RIPEMD-160 is only guaranteed to be the same as that of
+RIPEMD-160 itself, and similarly for the 256-bit extension of RIPEMD-128
+with respect to RIPEMD-128 itself.
+
+Pseudocode for RIPEMD-256 and RIPEMD-320 are provided for, as well as test
+vectors, which are given in the tables below. The messages are given in
+ASCII format, while the corresponding hash results are in hexadecimal
+format.
+
+ Message                             Hash result using RIPEMD-256
+ "" (empty string) 02ba4c4e5f8ecd1877fc52d64d30e37a2d9774fb1e5d026380ae0168e3c5522d
+ "a"               f9333e45d857f5d90a91bab70a1eba0cfb1be4b0783c9acfcd883a9134692925
+ "abc"             afbd6e228b9d8cbbcef5ca2d03e6dba10ac0bc7dcbe4680e1e42d2e975459b65
+ "message digest"  87e971759a1ce47a514d5c914c392c9018c7c46bc14465554afcdf54a5070c0e
+ "a...z"1          649d3034751ea216776bf9a18acc81bc7896118a5197968782dd1fd97d8d5133
+
+ "abcdbcde...nopq"23843045583aac6c8c8d9128573e7a9809afb2a0f34ccc36ea9e72f16f6368e3f
+
+ "A...Za...z0...9"35740a408ac16b720b84424ae931cbb1fe363d1d0bf4017f1a89f7ea6de77a0b8
+
+ 8 times
+ "1234567890"      06fdcc7a409548aaf91368c06a6275b553e3f099bf0ea4edfd6778df89a890dd
+ 1 million times
+ "a"               ac953744e10e31514c150d4d8d7b677342e33399788296e43ae4850ce4f97978
+
+ Message                                     Hash result using RIPEMD-320
+ "" (empty string) 22d65d5661536cdc75c1fdf5c6de7b41b9f27325ebc61e8557177d705a0ec880151c3a32a00899b8
+ "a"               ce78850638f92658a5a585097579926dda667a5716562cfcf6fbe77f63542f99b04705d6970dff5d
+ "abc"             de4c01b3054f8930a79d09ae738e92301e5a17085beffdc1b8d116713e74f82fa942d64cdbc4682d
+ "message digest"  3a8e28502ed45d422f68844f9dd316e7b98533fa3f2a91d29f84d425c88d6b4eff727df66a7c0197
+ "a...z"1          cabdb1810b92470a2093aa6bce05952c28348cf43ff60841975166bb40ed234004b8824463e6b009
+
+ "abcdbcde...nopq"2d034a7950cf722021ba4b84df769a5de2060e259df4c9bb4a4268c0e935bbc7470a969c9d072a1ac
+
+ "A...Za...z0...9"3ed544940c86d67f250d232c30b7b3e5770e0c60c8cb9a4cafe3b11388af9920e1b99230b843c86a4
+
+ 8 times
+ "1234567890"      557888af5f6d8ed62ab66945c6d2a0a47ecd5341e915eb8fea1d0524955f825dc717e4a008ab2d42
+ 1 million times
+ "a"               bdee37f4371e20646b8b0d862dda16292ae36f40965e8c8509e63d1dbddecc503e2b63eb9245bb66
+
+  1. "abcdefghijklmnopqrstuvwxyz"
+  2. "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+  3. "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+  ------------------------------------------------------------------------
+MACs based on RIPEMD-160.
+
+Two constructions of MACs based on a hash-function are currently being
+standardized within ISO/IEC (DIS 9797-2). A reference implementation and
+test vectors are given for MDx-MAC based on RIPEMD-160/128, test vectors are
+given for HMAC based on RIPEMD-160/128.
+
+1. MDx-MAC for RIPEMD-160.
+
+At Crypto'95 Bart Preneel and Paul van Oorschot proposed a new generic
+construction (MDx-MAC) for transforming any secure hash function of the
+MD4-family into a secure MAC of equal or smaller bitlength and comparable
+speed. Reference C software for the MDx-MACs based on RIPEMD-160 and
+RIPEMD-128 is now available. Like for the corresponding hash functions the
+implementations are written for the sole purpose of documentation. No
+optimization whatsoever is performed: only readability and portability were
+kept in mind.
+
+   * B. Preneel and P.C. van Oorschot, ``MDx-MAX and building fast MACs from
+     hash functions,'' Advances in Cryptology - Crypto'95, LNCS 963, D.
+     Coppersmith, Ed., Springer-Verlag, 1995, pp. 1-14.
+   * B. Preneel and P.C. van Oorschot, ``Method of building fast MACs from
+     hash functions,'' U.S. Patent # 5,664,016, 2 September 1997.
+   * rmd160mc.c: source code for RIPEMD160-MAC
+   * rmd160mc.h: include file for RIPEMD160-MAC.
+   * rmd128mc.c: source code for RIPEMD128-MAC
+   * rmd128mc.h: include file for RIPEMD128-MAC.
+   * mactest.c: driver for both RIPEMD160-MAC and RIPEMD128-MAC.
+
+The table below lists the constants T0, T1, and T2 for both RIPEMD160-MAC
+and RIPEMD128-MAC, all in hexadecimal format.
+
+ Constant           RIPEMD160-MAC                   RIPEMD128-MAC
+ T0       1cc7086a046afa22353ae88f3d3daceb fd7ec18964c36d53fc18c31b72112aac
+ T1       e3fa02710e491d851151cc34e4718d41 2538b78ec0e273949ee4c4457a77525c
+ T2       93987557c07b8102ba592949eb638f37 f5c93ed85bd65f609a7eb182a85ba181
+
+Test vectors for two different keys (both in hexadecimal format) are given
+in the table below. The messages are given in ASCII format, while the
+corresponding MAC results are in hexadecimal format (the full length result
+is given).
+
+
+ Message           MAC result using RIPEMD160-MAC with key  MAC result using RIPEMD160-MAC with key
+                       00112233445566778899aabbccddeeff         0123456789abcdeffedcba9876543210
+ "" (empty string) b7f4508111eb8c3b5229c6aed406de9eca640133 b45d6ca84cfb9020e0d5aba2a7609d3d81f3f57f
+ "a"               bc78f55933bceb1ee85a906f9e18374f23e310f9 8844375992037d1bcd0d118ee548d70c3f19cbbb
+ "abc"             6300dc20e97a5aa29db9c7d607d23d126fa36863 917c59b8ac7fc19dc25bef82766412fa16bbc6a7
+ "message digest"  3a2ac89b78eeab8759f5112bcad4cd405eeb5d35 e0737cc7976d8f424390cb8798d623d751afe15a
+ "a...z"1          16dc174925bbc27e0c93d426c346846f97f8bc69 d57fae836870718efa4bd4a5f2f322a179a8735e
+
+ "abcdbcde...nopq"2e062210ba5c9c94737bf3a6e85b3b5664fbd1d4e 42b20d4c8fd5e8672760cf83c0478d7bf8021404
+
+ "A...Za...z0...9"39b462d5cbdae1485ffe10bc001ef9e3af6d128b5 63dea9dd7b52cc8c058b2d55b63e1874f8d85c96
+
+ 8 times
+ "1234567890"      88e73a01a1de36c92d6f9e41f7278d407b4a4ccd 10441df4f68ce8815818dc0fb370abf87bca4464
+ 1 million times
+ "a"               e7b128e4a1842b750f1e61a486c867c4887a4b21 e06ad21d2af04dd4217ab03b1a578f036997d01a
+
+                    MAC result using RIPEMD128-MAC   MAC result using RIPEMD128-MAC
+ Message                       with key                         with key
+                   00112233445566778899aabbccddeeff 0123456789abcdeffedcba9876543210
+ "" (empty string) a47a64e9ede0741b3fdde33e5c1c6d78 35fa3ac39f50f2a4e3ffc7af5776b4eb
+ "a"               51355051852fdc79fb228eac905633ad a89e25e6796747b630a2a00b802ea53e
+ "abc"             d83940daffbd4cbbe6ba30a6f9e63f5f 66339027a36608ebd932dd551616e7b2
+ "message digest"  1a7cfe2bb26e973e213c1cb96fa4c2ef 1f8779bad84b50373931211a2761ead3
+ "a...z"1          798aeac6046b31907c197bd68e59d376 31bf5b5b7abac2567dc0e02f1c3a25d7
+
+ "abcdbcde...nopq"20b8e1d4a571f32657189e22a1f2f4a53 b5b8ba3b8ea895fbc83cb7588fbd2656
+
+ "A...Za...z0...9"3b814730f482300c6e474fd255a66d680 8d27bbec257c848d5cf375eb5eda4cc7
+
+ 8 times
+ "1234567890"      9060a30758ebe3368d939ac168f1a9fd b40b5bf6727de90b26f770850f059c89
+ 1 million times
+ "a"               20763fdedf01e56ff5756954302c7de0 76c7bc831b0bce593dfd44e8e054a373
+
+  1. "abcdefghijklmnopqrstuvwxyz"
+  2. "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+  3. "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+2. HMAC-RIPEMD-160: testvectors.
+
+The HMAC-construction was proposed by Mihit Bellare, Ran Canetti, and Hugo
+Krawczyck, ``Keying Hash Functions for Message Authentication,'' Advances in
+Cryptology - Crypto'96, LNCS 1109, N. Koblitz, Ed., Springer-Verlag, 1996,
+pp. 1-15. Test vectors for two different keys (both in hexadecimal format)
+are given in the table below. The messages are given in ASCII format, while
+the corresponding MAC results are in hexadecimal format (the full length
+result is given). Keys are required to be at least the size of the hash
+result. Another source for test vectors is RFC 2286, ``Test cases for
+HMAC-RIPEMD160 and HMAC-RIPEMD128,'' Internet Request for Comments 2286, J.
+Kapp, February 1998.
+
+                   MAC result using HMAC-RIPEMD160 with key MAC result using HMAC-RIPEMD160 with key
+ Message
+                   00112233445566778899aabbccddeeff01234567 0123456789abcdeffedcba987654321000112233
+ "" (empty string) cf387677bfda8483e63b57e06c3b5ecd8b7fc055 fe69a66c7423eea9c8fa2eff8d9dafb4f17a62f5
+ "a"               0d351d71b78e36dbb7391c810a0d2b6240ddbafc 85743e899bc82dbfa36faaa7a25b7cfd372432cd
+ "abc"             f7ef288cb1bbcc6160d76507e0a3bbf712fb67d6 6e4afd501fa6b4a1823ca3b10bd9aa0ba97ba182
+ "message digest"  f83662cc8d339c227e600fcd636c57d2571b1c34 2e066e624badb76a184c8f90fba053330e650e92
+ "a...z"1          843d1c4eb880ac8ac0c9c95696507957d0155ddb 07e942aa4e3cd7c04dedc1d46e2e8cc4c741b3d9
+
+ "abcdbcde...nopq"260f5ef198a2dd5745545c1f0c47aa3fb5776f881 b6582318ddcfb67a53a67d676b8ad869aded629a
+
+ "A...Za...z0...9"3e49c136a9e5627e0681b808a3b97e6a6e661ae79 f1be3ee877703140d34f97ea1ab3a07c141333e2
+
+ 8 times
+ "1234567890"      31be3cc98cee37b79b0619e3e1c2be4f1aa56e6c 85f164703e61a63131be7e45958e0794123904f9
+ 1 million times
+ "a"               c2aa88c6405658dc225e485488371fb2433fa735 82a504a002ba6e6c67f3cd67cedb66dc169bab7a
+
+                    MAC result using HMAC-RIPEMD128  MAC result using HMAC-RIPEMD128
+ Message                       with key                         with key
+                   00112233445566778899aabbccddeeff 0123456789abcdeffedcba9876543210
+ "" (empty string) ad9db2c1e22af9ab5ca9dbe5a86f67dc 8931eeee56a6b257fd1ab5418183d826
+ "a"               3bf448c762de00bcfa0310b11c0bde4c dbbcf169ea7419d5ba7bd8eb3673ff2d
+ "abc"             f34ec0945f02b70b8603f89e1ce4c78c 2c4cd07d3162d6a0e338004d6b6fbc9a
+ "message digest"  e8503a8aec2289d82aa0d8d445a06bdd 75bfb25888f4bb77c77ae83ad0817447
+ "a...z"1          ee880b735ce3126065de1699cc136199 b1b5dc0fcb7258758855dd1840fcdce4
+
+ "abcdbcde...nopq"2794daf2e3bdeea2538638a5ced154434 670d0f7a697b18f1a8ab7d2a2a00dbc1
+
+ "A...Za...z0...9"33a06eef165b23625247800be23e232b6 54e315fdb34a61c0475392e5c7852998
+
+ 8 times
+ "1234567890"      9a4f0159c0952da43a8d466d46b0af58 ad04354d8aa2a623e72e3594ee3535c0
+ 1 million times
+ "a"               19b1b3af333b894dd86d09427116d0ad 6f9b1c0fc06753618d6db4b007733795
+
+  1. "abcdefghijklmnopqrstuvwxyz"
+  2. "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+  ------------------------------------------------------------------------
+OAEP-encoding based on RIPEMD-160: test vectors
+
+The OAEP (Optimal Asymmetric Encryption Padding) encoding method is
+parametrized by the choice of the hash function and mask generation
+function. This section lists test vectors for OAEP based on RIPEMD-160 and
+the mask generation function MGF1 as defined in PKCS #1 v2.0 and IEEE P1363
+with RIPEMD-160 as the hash function. Inputs to the OAEP encoding method are
+
+   * the message to be encoded
+   * a string detailing encoding parameters
+   * the intended length in bytes of the encoded message
+   * a random string of 20 bytes long
+
+All strings are given in hexadecimal format.
+
+                                                         OAEP-encoded message string for
+           Encoding parameters                      message to be encoded = 54859b342c49ea2a,
+                                                  intended length of encoded message = 63 bytes,
+                                             random string = aafd12f659cae63489b479e5076ddec2f06cb58f.
+                                         7dcfd33b1ca1107625a3fbd99075e7c8adc134bf3f5c201b7ad3e8b3ede0b481
+ empty string
+                                         36002dd2ec034f04cda492db86973642dd59f018b0908a6504b4f845be3236
+                                         62732b7784ac93f3ed97ed1d89c7aedf1e98a21f171240b14fa63ee789e54e78
+ 3bf4c66f209e05f2a86eae213322fbf9252d6408
+                                         fc34dc63650b0395cda492db86973642dd59f018b0908a6504b4f845be3236
+                                         071c2309ec131348e4faeeb5a409135a9c728b72e42e655755cdca7764183c48
+ 2771857832caf8f054940134a736233269f00d42
+                                         72204bb51c9bbb2ecda492db86973642dd59f018b0908a6504b4f845be3236
+
+  ------------------------------------------------------------------------
+Still more questions?
+
+Do not hesitate to contact us: Hans Dobbertin, Antoon Bosselaers, or Bart
+Preneel
+
+  ------------------------------------------------------------------------
+
+Back to:
+
+   * Antoon's homepage
+   * Bart's homepage
+   * COSIC's homepage
+
+  ------------------------------------------------------------------------
+This page is maintained by Antoon Bosselaers and was last updated on 17
+August 1999.

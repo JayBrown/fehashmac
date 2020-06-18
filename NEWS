@@ -1,0 +1,54 @@
+07.09.2016 Release 2.1
+The SHA3 and keccak code base has been replaced by a current version
+taken on 2016-08-04 from the github repository, 
+https://github.com/gvanas/KeccakCodePackage.
+A patch has been added to KeccakHash.c to correctly treat partial byte input.
+
+11.07.2016 Release 1.5.1
+The MD6 algorithms have been added - not that they are of practical use,
+but now the complete set of Ron Rivest's hash codes (md4, md5, md6-*) 
+is available.
+Performance tests can now be executed in the Doc directory 
+(type ``make perftest´´). It has been found that compiling with gcc and clang
+gives different but inconsistent results. Results are included.
+
+29.02.2015 Release 1.5.0
+SHA3 is now based on the official FIPS 202 standard.
+shake128 and shake256 support now the extendable length output,
+the previous xofshake128 and xofshake256 algorithms are abandoned.
+
+20.05.2015 Release 1.4.2
+KMAC implemented for all SHA3 algorithms. Key is either
+an ASCII  string of up to 253 bytes or a hex string of
+up to 2031 bits. --keylength=nnn specifies the length 
+of the key in bits (hexkey only).
+
+01.05.2015 Release 1.4.1
+Extendable Output Functions xofshake128, xofshake256 can now
+produce arbitrary length output, also in base64 encoding
+if desired.
+
+27.02.2015 Release 1.4.0
+shake128, shake256 can now produce and verify base64-encoded
+output, use either the --base64 flag or specifiy the
+algorithms as shake128-b64 and shake256-b64.
+
+18.01.2015 Release 1.3.1
+implements the performant SHA3 algorithms, derived from
+the 64 bit KeccakWidth1600Opt64LCu6 version in 
+KeccakCodePackage (downloaded on 11.12.2015): 
+
+$ git clone https://github.com/gvanas/KeccakCodePackage
+
+This version gives good performance both
+on 32 and 64 bit Intel platforms as well as on an
+AMD GEODE based appliance. Reports about other platforms
+like SPARC are welcome.
+
+03.01.2015 Release 1.3.0
+includes the DRAFT SHA3 algorithms: sha3-224, sha3-256,
+sha3-384, sha3-512, shake128, shake256.
+The implementation of SHA3 is based on the reference 
+implementation of the Keccak authors. A more performant
+implementation will follow in an update.
+

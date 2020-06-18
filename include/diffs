@@ -1,0 +1,272 @@
+--- ./fehashmac-algos.h.orig	2015-04-29 08:45:22.000000000 +0200
++++ ./fehashmac-algos.h	2015-05-07 13:39:31.780894635 +0200
+@@ -738,7 +738,7 @@
+ 		HASH_INPUTBUFFER_SHA3_224,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		0,	// no base64 
+ 		0,	// no variable length output
+ 	},
+@@ -758,7 +758,7 @@
+ 		HASH_INPUTBUFFER_SHA3_256,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		0,	// no base64 
+ 		0,	// no variable length output
+ 	},
+@@ -778,7 +778,7 @@
+ 		HASH_INPUTBUFFER_SHA3_384,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		0,	// no base64 
+ 		0,	// no variable length output
+ 	},
+@@ -798,7 +798,7 @@
+ 		HASH_INPUTBUFFER_SHA3_512,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		0,	// no base64 
+ 		0,	// no variable length output
+ 	},
+@@ -818,7 +818,7 @@
+ 		HASH_INPUTBUFFER_SHAKE128,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		1,	// base64 OK
+ 		0,	// variable length output OK
+ 	},
+@@ -838,7 +838,7 @@
+ 		HASH_INPUTBUFFER_SHAKE256,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		1,	// base64 OK
+ 		0,	// variable length output OK
+ 	},
+@@ -866,7 +866,7 @@
+ 		HASH_INPUTBUFFER_SHAKE128,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		1,	// base64 OK
+ 		XOF_LENGTH_XOFSHAKE128,	// variable length output OK, default length
+ 	},
+@@ -894,7 +894,7 @@
+ 		HASH_INPUTBUFFER_SHAKE256,
+ 		"DRAFT FIPS PUB 202, May 2014, http://csrc.nist.gov/publications/drafts/fips-202/fips_202_draft.pdf",
+ 		1, 	// bitwise OK
+-		0,	// NO HMAC support
++		2,	// KMAC support
+ 		1,	// base64 OK
+ 		XOF_LENGTH_XOFSHAKE256,	// variable length output OK, default length
+ 	},
+--- ./fehashmac.h.orig	2015-04-29 10:41:54.000000000 +0200
++++ ./fehashmac.h	2015-05-12 17:28:27.828822424 +0200
+@@ -120,12 +120,17 @@
+ 	/* 1 if bitwise ops are supported */
+ 	/* 2 if bitwise ops are supported, but no published test vectors avail. */
+ 	int  bitwise_support;
+-	int  hmac_OK;	// cleared for sha3-*, shake*
++	// int  hmac_OK;	// cleared for sha3-*, shake*
++	int  mac_OK;	// 1 for HMAC, 2 for KMAC (bitmask)
+ 	int  base64_OK;	// set if base64 output of hash is OK
+ 	int  xof_OK_defaultLength;	/* set to default length if variable 
+ 								 * output length is OK (XOFSHAKExxx) */
+ };
+ 
++/* HMAC, KMAC selectors	*/
++#define hmac_OK(bitmask) ((bitmask) & 0x01)
++#define kmac_OK(bitmask) ((bitmask) & 0x02)
++
+ /*	linked list of algorithms that we use for each file	*/
+ 
+ struct	use_algo	{
+@@ -134,8 +139,11 @@
+ 	hashState			context;	/* opaque handle	*/
+ 	BYTE				*ipad;		/* padding buffer for HMAC */
+ 	BYTE				*opad;		/* padding buffer for HMAC */
++	BYTE				*keypack;	/* keypack buffer for KMAC */
++	int					keypacklen;	/* length of keypack in bytes */
+ 	struct	use_algo	*next;		/* forward link */
+ 	int					hmacflag;	/* 1 if hmac requested */
++	int					kmacflag;	/* 1 if kmac requested */
+ 	struct	extra		extra;		/* extra data for XOFSHAKEnnn	*/
+ #if 0
+ 	int					base64flag;	/* 1 if base64 requested */
+@@ -323,6 +331,7 @@
+ // simplify quality assurance
+ 
+ extern int     hmacflag;       // HMAC request: key and algo required
++extern int     kmacflag;       // KMAC request: key and algo required
+ extern int     keyflag;        // HMAC key supplied as ascii string:
+                             	// -K, --K=, --key=
+ extern int     hexkeyflag;     // HMAC key supplied as hex string:
+--- ./fehashmac-macros.h.orig	2015-04-20 19:18:23.000000000 +0200
++++ ./fehashmac-macros.h	2015-05-14 20:40:47.672617495 +0200
+@@ -32,7 +32,9 @@
+                                // --hexkey=
+ extern char    *keystring;     // ASCII key string (for HMAC)
+ extern char    *hexkeystring;  // key string in hex (for HMAC)
++extern int     keylength;      // length of keystring in bits for KMAC
+ extern int     hmacprintflag;  // once is enough
++extern int     kmacprintflag;  // once is enough
+ 
+ 
+ // HMAC macros: HMAC_INIT, HMAC_UPDATE, HMAC_FINAL
+@@ -120,6 +122,7 @@
+ //	lastinlist		pointer to last algorithm in list
+ // External variables:
+ //	hmacflag		set if one or more HMAC's are requested
++//	kmacflag		set if one or more KMAC's are requested
+ // non-existing algos are silently skipped
+ 
+ #define ADD_TO_ALGOLIST(inputstring,uselist,nused,lastinlist) { \
+@@ -136,12 +139,19 @@
+ 			ptr = endptr; \
+ 		} \
+ 		/* verify algo, add to uselist */ \
++		/* check for HMAC and KMAC	*/ \
+ 		int	myhmac = 0;	 \
+ 		if (strncmp (myalgo, "hmac-", strlen ("hmac-")) == 0) { \
+ 			myhmac = 1; \
+ 			hmacflag++;		/* global hmac counter */ \
+ 			myalgo += strlen ("hmac-"); /* jump over leading "hmac-"	*/ \
+ 		} \
++		int	mykmac = 0;	 \
++		if (strncmp (myalgo, "kmac-", strlen ("kmac-")) == 0) { \
++			mykmac = 1; \
++			kmacflag++;		/* global kmac counter */ \
++			myalgo += strlen ("kmac-"); /* jump over leading "kmac-"	*/ \
++		} \
+ 		/* check for trailing -b64 for base64 support */ \
+ 		int myb64 = 0; \
+ 		char *p; \
+@@ -154,8 +164,10 @@
+ 			if ((strcmp (myalgo, HashTable[j].name) == 0) || \
+ 				(strcmp (myalgo, "all") == 0)) { \
+ 				/* algorithm found: add to list */ \
+-				/* if hmac and/or base64 requested but not supported, then skip silently */ \
+-				if (myhmac && !HashTable[j].hmac_OK) continue; \
++				/* if hmac, kmac and/or base64 requested but not supported, then skip silently */ \
++				/* this means no fallback to unsupported std algo (e.g. md5 instead of m5-b64) */ \
++				if (myhmac && !hmac_OK(HashTable[j].mac_OK)) continue; \
++				if (mykmac && !kmac_OK(HashTable[j].mac_OK)) continue; \
+ 				if (myb64 && !HashTable[j].base64_OK) continue; \
+ 				/* first entry */ \
+ 				if (nused++ == 0) { \
+@@ -163,6 +175,7 @@
+ 					uselist.name = HashTable[j].name; \
+ 					uselist.a = HashTable + j; \
+ 					uselist.hmacflag = myhmac; \
++					uselist.kmacflag = mykmac; \
+ 					uselist.extra.base64flag = myb64; \
+ 					uselist.next = NULL; \
+ 					lastinlist = &uselist; \
+@@ -176,6 +189,7 @@
+ 					use->a = HashTable + j; \
+ 					use->next = NULL; \
+ 					use->hmacflag = myhmac; \
++					use->kmacflag = mykmac; \
+ 					use->extra.base64flag = myb64; \
+ 					lastinlist = use; \
+ 				} \
+@@ -184,4 +198,87 @@
+ 	} \
+ } while (0)
+ 
++// KMAC macros: KMAC_INIT, KMAC_UPDATE
++
++/* ualgo: struct use_algo *
++ * kflag = 1: KMAC key is ASCII string 
++ * kflag = 0: KMAC key is hex string 
++ * printflag: print KMAC key
++ *
++ * external variables:
++ * keystring:		KMAC ASCII key string (used if kflag is set)
++ * hexkeystring:	KMAC hex key string (used if kflag is cleared)
++ * keylength:		length of hex key in bits (if not whole bytes)
++ *
++ * Note: SHA3 functions incl. XOFSHAKEnnn support KMAC
++ */
++#define KMAC_INIT(ualgo,kflag,printflag) do { \
++	int j; \
++	if (printflag) printf ("KMAC_INIT %s (kmac) = ", kflag? "key" : "hexkey"); \
++	/* keypack: lenpack, key, padding, see http://keyak.noekeon.org/Keyak-1.2.pdf */ \
++	BYTE *tempbuf = NULL; \
++	int len = 0; \
++	int lenpack; \
++	if (kflag) { /* HMAC key is ASCII string */ \
++		if (printflag) printf ("%s\n", keystring); \
++		tempbuf = (BYTE *) keystring; \
++		len = strlen (keystring); \
++		lenpack = len + 2; \
++	} else { /* KMAC key is hex string */ \
++		tempbuf = (BYTE *) malloc (strlen(hexkeystring)); \
++		memset (tempbuf, 0, strlen(hexkeystring)); \
++		len = copyhextobin (tempbuf, strlen(hexkeystring), hexkeystring, \
++					strlen (hexkeystring)); /* len is number of nibbles */ \
++		/* if more nibbles than required, OK even if odd */ \
++		if (keylength) { \
++			if ((len/2) >= ((keylength+7)/8)) { \
++				len = (keylength+7)/8; \
++			} else { \
++				fprintf (stderr, "kmax hexkeystring is too short: has %d bits, but expects %d, stop.\n", \
++						len*4, keylength); \
++				exit (1); \
++			} \
++		} else { \
++			if (len&0x01) { fprintf (stderr, "kmac hexkeystring has odd number of nibbles %d, stop.\n", len); \
++						printf ("\n"); \
++						exit (1); \
++			} \
++			len = (len+1)/2;	/* length of tempbuf in bytes */ \
++		} \
++		if (printflag) { \
++			for (j=0; j<len; j++)  \
++				printf ("%2.2x", tempbuf[j]&0xff); \
++			printf ("\n"); \
++		} \
++		if (keylength % 8) lenpack = len + 1; else lenpack = len + 2; \
++	} \
++	if (lenpack > 255) { fprintf (stderr, "KMAC: key is too long, only 253 bytes are safe.\n"); exit (1); } \
++	ualgo->keypacklen = lenpack; \
++	/* copy to buf and pad */ \
++	ualgo->keypack = (BYTE *) malloc (lenpack); \
++	memset (ualgo->keypack, 0, lenpack); \
++	ualgo->keypack[0] = lenpack & 0xff; \
++	memcpy (ualgo->keypack+1, tempbuf, len); \
++	if (!kflag) { free (tempbuf); tempbuf = NULL; } \
++	if (keylength % 8) { int bit = 0x01 << (keylength%8); int mask = bit - 1; \
++		ualgo->keypack[len] &= mask; ualgo->keypack[len] |= bit; } \
++	else { ualgo->keypack[len+1] = 0x01; } \
++	if (printflag) { \
++		printf ("Keypack %d bytes: ", lenpack); \
++		for (j=0; j<lenpack; j++) \
++			printf ("%2.2x", ualgo->keypack[j] & 0xff); \
++		printf ("\n"); \
++	} \
++} while (0)
++			
++/* KMAC_UPDATE feeds the padded KMAC key (in keypack) to the 
++ * hash algorithm; later, the actual text is fed to the algorithm
++ *
++ * ualgo: struct use_algo *
++ * context: properly initialized algorithm context
++ */
++#define KMAC_UPDATE(ualgo,context) do { \
++	(*ualgo->a->update)(context, ualgo->keypack, ualgo->keypacklen<<3); \
++} while (0)
++
+ #endif
